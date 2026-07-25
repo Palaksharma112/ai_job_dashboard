@@ -3,7 +3,11 @@ import pandas as pd
 import plotly.express as px
 from streamlit_option_menu import option_menu
 
+<<<<<<< HEAD
 
+=======
+from api import get_jobs
+>>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
 from utils import (
     filter_jobs,
     get_kpis,
@@ -143,7 +147,11 @@ def dashboard_header():
     with col1:
 
         page_header(
+<<<<<<< HEAD
             "IT Job Market Dashboard",
+=======
+            "🤖 AI Job Market Dashboard",
+>>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
             "Live AI Jobs using JSearch API"
         )
 
@@ -179,6 +187,7 @@ def dashboard_page():
     # LOAD LIVE DATA
     # -------------------------------
 
+<<<<<<< HEAD
     with st.spinner("Loading dataset..."):
 
      df = pd.read_excel(
@@ -193,6 +202,12 @@ def dashboard_page():
                 },
                 inplace=True
             )
+=======
+    with st.spinner("Loading latest AI jobs..."):
+
+        df = get_jobs("Data Scientist")
+
+>>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
     if df.empty:
         st.warning("No jobs found.")
         return
@@ -374,7 +389,10 @@ def dashboard_page():
             filtered_df["Location"]
 
             .value_counts()
+<<<<<<< HEAD
              .head(10)
+=======
+>>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
 
             .reset_index()
 
@@ -392,6 +410,7 @@ def dashboard_page():
 
             location_df,
 
+<<<<<<< HEAD
            
 
             x="Jobs",
@@ -400,6 +419,13 @@ def dashboard_page():
 
             color="Jobs",
               orientation="h",
+=======
+            x="Location",
+
+            y="Jobs",
+
+            color="Jobs",
+>>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
 
             text_auto=True,
 
