@@ -52,7 +52,9 @@ def companies_page(df):
 
     total_jobs = len(df)
 
-    avg_salary = int(df["Salary"].mean()) if not df.empty else 0
+    avg_salary = df["Salary"].mean() if not df.empty else 0
+
+
 
     locations = df["Location"].nunique()
 
@@ -61,7 +63,10 @@ def companies_page(df):
     c1.metric("🏢 Companies", total_companies)
     c2.metric("💼 Jobs", total_jobs)
     c3.metric("📍 Cities", locations)
-    c4.metric("💰 Avg Salary", f"₹ {avg_salary:,}")
+    c4.metric(
+    "💰 Avg Salary",
+    f"₹ {avg_salary:.1f} LPA"
+)
 
     st.divider()
 
@@ -72,19 +77,43 @@ def companies_page(df):
     st.subheader("📋 Company Summary")
 
     summary = (
-        df.groupby("Company", dropna=False)
-        .agg(
-            Jobs=("Company", "count"),
-            Avg_Salary=("Salary", "mean"),
-            Cities=("Location", "nunique")
-        )
-        .reset_index()
+    df.groupby("Company", dropna=False)
+    .agg(
+        Jobs=("Company", "count"),
+        Avg_Salary=("Salary", "mean"),
+        Max_Salary=("Salary", "max"),
+        Min_Salary=("Salary", "min"),
+        Cities=("Location", "nunique")
+    )
+    .reset_index()
+)
+
+    summary["Avg_Salary"] = summary["Avg_Salary"].apply(
+    lambda x: f"₹ {x:.1f} LPA"
+)
+
+    summary["Max_Salary"] = summary["Max_Salary"].apply(
+        lambda x: f"₹ {x:.1f} LPA"
     )
 
-    summary["Avg_Salary"] = summary["Avg_Salary"].fillna(0).astype(int)
+    summary["Min_Salary"] = summary["Min_Salary"].apply(
+        lambda x: f"₹ {x:.1f} LPA"
+    )
 
+
+    summary = summary.rename(
+    columns={
+        "Company": "🏢 Company",
+        "Jobs": "💼 Jobs",
+        "Avg_Salary": "💰 Avg Salary",
+        "Max_Salary": "📈 Highest Salary",
+        "Min_Salary": "📉 Lowest Salary",
+        "Cities": "📍 Cities"
+    }
+)
+    
     st.dataframe(
-        summary,
-        use_container_width=True,
-        hide_index=True
-    )
+    summary,
+    use_container_width=True,
+    hide_index=True
+)

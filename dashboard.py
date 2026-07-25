@@ -1,14 +1,9 @@
 import streamlit as st
-import pandas as pd
 import plotly.express as px
 from streamlit_option_menu import option_menu
 
-<<<<<<< HEAD
-
-=======
-from api import get_jobs
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
 from utils import (
+    load_data,
     filter_jobs,
     get_kpis,
     company_summary,
@@ -30,9 +25,9 @@ from analytics import analytics_page
 from profile import profile_page
 
 
-# ======================================================
+# =====================================================
 # SIDEBAR
-# ======================================================
+# =====================================================
 
 def sidebar(df):
 
@@ -42,11 +37,10 @@ def sidebar(df):
             st.session_state.get("username", "User")
         )
 
-        st.markdown("---")
+        st.html("---")
 
         selected = option_menu(
             menu_title="Navigation",
-
             options=[
                 "Dashboard",
                 "Jobs",
@@ -54,7 +48,6 @@ def sidebar(df):
                 "Analytics",
                 "Profile"
             ],
-
             icons=[
                 "speedometer2",
                 "briefcase-fill",
@@ -62,59 +55,36 @@ def sidebar(df):
                 "bar-chart-fill",
                 "person-circle"
             ],
-
-            default_index=0,
-
-            styles={
-                "container": {
-                    "background-color": "#111827",
-                    "padding": "5px"
-                },
-
-                "icon": {
-                    "color": "#3B82F6",
-                    "font-size": "18px"
-                },
-
-                "nav-link": {
-                    "font-size": "16px",
-                    "text-align": "left",
-                    "margin": "4px",
-                    "border-radius": "10px",
-                    "--hover-color": "#1E293B"
-                },
-
-                "nav-link-selected": {
-                    "background-color": "#2563EB",
-                    "font-weight": "bold"
-                }
-            }
+            default_index=0
         )
 
-        st.markdown("---")
+        st.html("---")
+
         st.subheader("🔍 Filters")
 
         company = st.selectbox(
             "Company",
             ["All"] + sorted(df["Company"].dropna().unique().tolist())
-            if "Company" in df.columns else ["All"]
         )
 
         location = st.selectbox(
             "Location",
             ["All"] + sorted(df["Location"].dropna().unique().tolist())
-            if "Location" in df.columns else ["All"]
         )
 
         employment = st.selectbox(
             "Employment Type",
             ["All"] + sorted(df["Employment Type"].dropna().unique().tolist())
-            if "Employment Type" in df.columns else ["All"]
         )
 
         remote = st.selectbox(
             "Remote",
-            ["All", "Yes", "No"]
+            ["All"] + sorted(
+                df["Remote"]
+                .astype(str)
+                .unique()
+                .tolist()
+            )
         )
 
         st.markdown("---")
@@ -123,6 +93,7 @@ def sidebar(df):
             "🚪 Logout",
             use_container_width=True
         ):
+
             st.session_state.logged_in = False
             st.session_state.page = "login"
             st.rerun()
@@ -136,23 +107,19 @@ def sidebar(df):
     )
 
 
-# ======================================================
+# =====================================================
 # HEADER
-# ======================================================
+# =====================================================
 
 def dashboard_header():
 
-    col1, col2 = st.columns([6,1])
+    col1, col2 = st.columns([6, 1])
 
     with col1:
 
         page_header(
-<<<<<<< HEAD
-            "IT Job Market Dashboard",
-=======
-            "🤖 AI Job Market Dashboard",
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
-            "Live AI Jobs using JSearch API"
+            "💼 IT Job Market Dashboard",
+            "Explore IT Jobs using your own dataset"
         )
 
     with col2:
@@ -161,60 +128,39 @@ def dashboard_header():
         st.write("")
 
         if st.button(
-            "🚪 Logout",
-            use_container_width=True,
-            key="header_logout"
+            "Logout",
+            key="header_logout",
+            use_container_width=True
         ):
+
             st.session_state.logged_in = False
             st.session_state.page = "login"
             st.rerun()
 
     search = st.text_input(
         "",
-        placeholder="Search AI, Data Scientist, Python Developer...",
+        placeholder="Search Job Title, Company or Skills...",
         label_visibility="collapsed"
     )
 
     return search
 
-# ======================================================
-# MAIN DASHBOARD
-# ======================================================
+
+# =====================================================
+# DASHBOARD PAGE
+# =====================================================
 
 def dashboard_page():
 
-    # -------------------------------
-    # LOAD LIVE DATA
-    # -------------------------------
+    with st.spinner("Loading IT Job Dataset..."):
 
-<<<<<<< HEAD
-    with st.spinner("Loading dataset..."):
+        df = load_data()
 
-     df = pd.read_excel(
-        "data/jobs.xlsx",
-        engine="openpyxl"
-    )
-     
-     if "Salary (LPA)" in df.columns:
-            df.rename(
-                columns={
-                    "Salary (LPA)": "Salary"
-                },
-                inplace=True
-            )
-=======
-    with st.spinner("Loading latest AI jobs..."):
-
-        df = get_jobs("Data Scientist")
-
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
     if df.empty:
-        st.warning("No jobs found.")
-        return
 
-    # -------------------------------
-    # SIDEBAR
-    # -------------------------------
+        st.error("Dataset not found.")
+
+        return
 
     (
         selected,
@@ -223,10 +169,6 @@ def dashboard_page():
         employment,
         remote
     ) = sidebar(df)
-
-    # -------------------------------
-    # PAGE NAVIGATION
-    # -------------------------------
 
     if selected == "Jobs":
         jobs_page(df)
@@ -244,15 +186,7 @@ def dashboard_page():
         profile_page()
         return
 
-    # -------------------------------
-    # HEADER
-    # -------------------------------
-
     search = dashboard_header()
-
-    # -------------------------------
-    # FILTER DATA
-    # -------------------------------
 
     filtered_df = filter_jobs(
         df=df,
@@ -264,12 +198,10 @@ def dashboard_page():
     )
 
     if filtered_df.empty:
-        st.warning("No jobs found for selected filters.")
-        return
 
-    # -------------------------------
-    # KPI
-    # -------------------------------
+        st.warning("No jobs found.")
+
+        return
 
     (
         total_jobs,
@@ -278,97 +210,64 @@ def dashboard_page():
         remote_jobs
     ) = get_kpis(filtered_df)
 
-    st.markdown("## 📊 Dashboard Overview")
+    st.html("## 📊 Dashboard Overview")
 
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        kpi_card(
-            "💼",
-            "Jobs",
-            total_jobs
-        )
+        kpi_card("💼", "Jobs", total_jobs)
 
     with c2:
-        kpi_card(
-            "🏢",
-            "Companies",
-            total_companies
-        )
+        kpi_card("🏢", "Companies", total_companies)
 
     with c3:
-        kpi_card(
-            "💰",
-            "Average Salary",
-            f"₹ {avg_salary:,}"
-        )
+        kpi_card("💰", "Average Salary", f"₹ {avg_salary:,.2f} LPA")
 
     with c4:
-        kpi_card(
-            "🌍",
-            "Remote Jobs",
-            remote_jobs
-        )
+        kpi_card("🌍", "Remote Jobs", remote_jobs)
 
     st.divider()
 
-    # =====================================================
-    # CHARTS
+        # =====================================================
+    # FIRST ROW CHARTS
     # =====================================================
 
     left, right = st.columns(2)
 
-    # -----------------------------
-    # Salary by Company
-    # -----------------------------
+    # ---------------------------------
+    # Average Salary by Company
+    # ---------------------------------
 
     with left:
 
         st.subheader("💰 Average Salary by Company")
 
         salary_df = (
-
             filtered_df
-
-            .groupby("Company")["Salary"]
-
+            .groupby("Company", as_index=False)["Salary"]
             .mean()
-
-            .reset_index()
-
             .sort_values(
-                "Salary",
+                by="Salary",
                 ascending=False
             )
-
             .head(10)
-
         )
 
         fig = px.bar(
-
             salary_df,
-
             x="Company",
-
             y="Salary",
-
             color="Salary",
-
-            text_auto=".2s",
-
+            text_auto=".2f",
             color_continuous_scale="Blues"
-
         )
 
         fig.update_layout(
-
             template="plotly_dark",
-
             height=420,
-
-            showlegend=False
-
+            showlegend=False,
+            xaxis_title="Company",
+            yaxis_title="Salary (LPA)"
         )
 
         st.plotly_chart(
@@ -376,71 +275,38 @@ def dashboard_page():
             use_container_width=True
         )
 
-    # -----------------------------
+    # ---------------------------------
     # Jobs by Location
-    # -----------------------------
+    # ---------------------------------
 
     with right:
 
         st.subheader("📍 Jobs by Location")
 
         location_df = (
-
             filtered_df["Location"]
-
+            .dropna()
             .value_counts()
-<<<<<<< HEAD
-             .head(10)
-=======
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
-
+            .head(10)          # Show only top 10 locations
             .reset_index()
-
         )
 
-        location_df.columns = [
-
-            "Location",
-
-            "Jobs"
-
-        ]
+        location_df.columns = ["Location", "Jobs"]
 
         fig = px.bar(
-
             location_df,
-
-<<<<<<< HEAD
-           
-
             x="Jobs",
-
-             y="Location",
-
+            y="Location",
+            orientation="h",
             color="Jobs",
-              orientation="h",
-=======
-            x="Location",
-
-            y="Jobs",
-
-            color="Jobs",
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
-
             text_auto=True,
-
             color_continuous_scale="Viridis"
-
         )
 
         fig.update_layout(
-
             template="plotly_dark",
-
             height=420,
-
             showlegend=False
-
         )
 
         st.plotly_chart(
@@ -456,48 +322,36 @@ def dashboard_page():
 
     left, right = st.columns(2)
 
+    # ---------------------------------
+    # Remote Jobs
+    # ---------------------------------
+
     with left:
 
-        st.subheader("🌍 Remote Jobs")
+        st.subheader("🌍 Remote vs On-site")
 
         remote_df = (
-
             filtered_df["Remote"]
-
             .astype(str)
-
             .value_counts()
-
             .reset_index()
-
         )
 
         remote_df.columns = [
-
             "Type",
-
             "Jobs"
-
         ]
 
         fig = px.pie(
-
             remote_df,
-
             names="Type",
-
             values="Jobs",
-
-            hole=.45
-
+            hole=0.45
         )
 
         fig.update_layout(
-
             template="plotly_dark",
-
             height=420
-
         )
 
         st.plotly_chart(
@@ -505,46 +359,38 @@ def dashboard_page():
             use_container_width=True
         )
 
+    # ---------------------------------
+    # Top Skills
+    # ---------------------------------
+
     with right:
 
         st.subheader("💻 Most Demanded Skills")
 
-        skills = top_skills(filtered_df)
+        skills_df = top_skills(filtered_df)
 
-        if skills.empty:
+        if skills_df.empty:
 
-            st.info("No skills available.")
+            st.info("No Skills Available")
 
         else:
 
             fig = px.bar(
-
-                skills,
-
+                skills_df,
                 x="Demand",
-
                 y="Skill",
-
                 orientation="h",
-
                 color="Demand",
-
                 text_auto=True,
-
                 color_continuous_scale="Turbo"
-
             )
 
             fig.update_layout(
-
                 template="plotly_dark",
-
                 height=420,
-
                 yaxis=dict(
                     categoryorder="total ascending"
                 )
-
             )
 
             st.plotly_chart(
@@ -555,10 +401,10 @@ def dashboard_page():
     st.divider()
 
         # =====================================================
-    # RECENT JOBS
+    # LATEST JOBS
     # =====================================================
 
-    st.markdown("## 🚀 Latest AI Jobs")
+    st.html("## 🚀 Latest IT Jobs")
 
     recent_jobs = filtered_df.head(10)
 
@@ -568,33 +414,27 @@ def dashboard_page():
 
     else:
 
-        for index, row in recent_jobs.iterrows():
+        for _, row in recent_jobs.iterrows():
 
             job_card(row)
 
-            st.write(row.get("Apply Link"))
-        
-
-           
-            st.markdown("---")
+    st.divider()
 
 
     # =====================================================
     # FEATURED JOBS
     # =====================================================
 
-    st.markdown("## ⭐ Featured Jobs")
+    st.html("## ⭐ Featured Jobs")
 
-    if "Salary" in filtered_df.columns:
-
-        featured = filtered_df.sort_values(
+    featured = (
+        filtered_df
+        .sort_values(
             by="Salary",
             ascending=False
-        ).head(3)
-
-    else:
-
-        featured = filtered_df.head(3)
+        )
+        .head(3)
+    )
 
     cols = st.columns(3)
 
@@ -602,29 +442,29 @@ def dashboard_page():
 
         with col:
 
-            st.markdown(
+            st.html(
                 f"""
 <div class="featured-job">
 
-<h3>{row.get('Job Title','')}</h3>
+<h3>{row['Job Title']}</h3>
 
-<p><b>{row.get('Company','')}</b></p>
+<p><b>{row['Company']}</b></p>
 
 <hr>
 
-<p>📍 {row.get('Location','')}</p>
+<p>📍 {row['Location']}</p>
 
-<p>💰 ₹ {int(row.get('Salary',0)):,}</p>
+<p>💰 ₹ {row['Salary']} LPA</p>
 
-<p>💼 {row.get('Employment Type','')}</p>
+<p>💼 {row['Employment Type']}</p>
 
-<p>🌍 {row.get('Remote','')}</p>
+<p>🌍 {row['Remote']}</p>
 
 </div>
-""",
-                unsafe_allow_html=True
-            )
+                """
 
+               
+            )
 
     st.divider()
 
@@ -633,7 +473,7 @@ def dashboard_page():
     # TOP HIRING COMPANIES
     # =====================================================
 
-    st.markdown("## 🏢 Top Hiring Companies")
+    st.html("## 🏢 Top Hiring Companies")
 
     summary = company_summary(filtered_df)
 
@@ -657,14 +497,13 @@ def dashboard_page():
 
                     jobs=int(row["Jobs"]),
 
-                    salary=int(row["Avg_Salary"]),
+                    salary=float(row["Avg_Salary"]),
 
                     city=f"{row['Cities']} Cities",
 
                     skill="-"
 
                 )
-
 
     st.divider()
 
@@ -673,7 +512,7 @@ def dashboard_page():
     # QUICK INSIGHTS
     # =====================================================
 
-    st.markdown("## 📈 Quick Insights")
+    st.html("## 📈 Quick Insights")
 
     c1, c2 = st.columns(2)
 
@@ -681,17 +520,45 @@ def dashboard_page():
 
         st.success(
             f"""
-### 🏢 Companies
+### 💼 Total Jobs
 
-**{filtered_df['Company'].nunique()}**
+**{len(filtered_df)}**
 
-Active companies hiring today.
+Jobs currently available.
 """
         )
 
         st.info(
             f"""
-### 📍 Locations
+### 🏢 Companies
+
+**{filtered_df['Company'].nunique()}**
+
+Companies hiring now.
+"""
+        )
+
+    with c2:
+
+        highest_salary = filtered_df["Salary"].max()
+
+        highest_job = filtered_df.loc[
+            filtered_df["Salary"].idxmax()
+        ]
+
+        st.warning(
+            f"""
+### 💰 Highest Salary
+
+₹ {highest_salary} LPA
+
+**{highest_job['Company']}**
+"""
+        )
+
+        st.info(
+            f"""
+### 📍 Cities
 
 **{filtered_df['Location'].nunique()}**
 
@@ -699,55 +566,25 @@ Cities with job openings.
 """
         )
 
-    with c2:
-
-        highest = filtered_df.iloc[0]
-
-        st.warning(
-            f"""
-### 💰 Highest Salary
-
-₹ {int(highest.get('Salary',0)):,}
-
-{highest.get('Company','')}
-"""
-        )
-
-        st.info(
-            f"""
-### 🌍 Remote Jobs
-
-**{remote_jobs}**
-
-Remote opportunities available.
-"""
-        )
-
-
     st.divider()
 
-
-    # =====================================================
+        # =====================================================
     # DOWNLOAD DATA
     # =====================================================
 
-    st.markdown("## 📥 Export")
+    st.html("## 📥 Export Dataset")
 
     csv = convert_csv(filtered_df)
 
     st.download_button(
-
-        "⬇ Download CSV",
-
-        csv,
-
-        "AI_Jobs.csv",
-
-        "text/csv",
-
+        label="⬇ Download CSV",
+        data=csv,
+        file_name="IT_Job_Market_Dataset.csv",
+        mime="text/csv",
         use_container_width=True
-
     )
+
+    st.divider()
 
 
     # =====================================================
@@ -757,33 +594,62 @@ Remote opportunities available.
     with st.expander("📋 View Complete Dataset"):
 
         st.dataframe(
-
             filtered_df,
-
             use_container_width=True,
-
             hide_index=True,
-
             height=500
-
         )
+
+
+    # =====================================================
+    # DATASET SUMMARY
+    # =====================================================
+
+    st.html("## 📊 Dataset Summary")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+
+        st.metric(
+            "Total Records",
+            len(filtered_df)
+        )
+
+    with c2:
+
+        st.metric(
+            "Companies",
+            filtered_df["Company"].nunique()
+        )
+
+    with c3:
+
+        st.metric(
+            "Locations",
+            filtered_df["Location"].nunique()
+        )
+
+    st.divider()
 
 
     # =====================================================
     # FOOTER
     # =====================================================
 
-    st.markdown("---")
-
-    st.markdown(
+    st.html(
         """
-<div style="text-align:center;color:#94A3B8;padding:15px">
+---
+<div style="text-align:center;padding:20px">
 
-🤖 AI Job Market Dashboard
+<h3>💼 IT Job Market Dashboard</h3>
 
-Live Data using JSearch API • Streamlit • Plotly • SQLite
+<p>Developed using <b>Python • Streamlit • Pandas • Plotly • SQLite</b></p>
+
+<p>📊 Analyze IT jobs by Company, Salary, Skills, Location and Employment Type.</p>
+
+<p>© 2026 | Created by <b>Palak Sharma</b></p>
 
 </div>
-""",
-        unsafe_allow_html=True
+"""
     )

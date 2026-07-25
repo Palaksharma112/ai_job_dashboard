@@ -61,7 +61,7 @@ if st.session_state.page == "home":
         st.markdown(
             f"""
             <h2 style='color:white;font-weight:700;'>
-                🤖 AI Job Market Dashboard
+                IT Job Market Dashboard
             </h2>
             """,
             unsafe_allow_html=True
@@ -153,7 +153,7 @@ Explore thousands of **AI**, **Machine Learning**, **Data Science**, and
     use_container_width=True
 ):
               st.markdown("""
-## 🤖 AI Job Market Dashboard
+## IT Job Market Dashboard
 
 ### Project Description
 
@@ -209,7 +209,7 @@ Live job data is fetched directly from the JSearch API through RapidAPI.
     with f1:
         st.info(
             """
-### 📊 AI Job Analytics
+### IT Job Analytics
 
 ✔ Interactive Dashboard
 

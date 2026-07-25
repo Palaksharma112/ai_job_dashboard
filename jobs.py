@@ -157,7 +157,10 @@ def jobs_page(df):
 
     b.metric("🏢 Companies", companies)
 
-    c.metric("💰 Avg Salary", f"₹ {avg_salary:,}")
+    c.metric(
+    "💰 Avg Salary",
+    f"{avg_salary:.1f} LPA"
+)
 
     d.metric("🌍 Remote", remote_jobs)
 
@@ -190,97 +193,117 @@ def jobs_page(df):
 
         return
 
-    for _, row in filtered.iterrows():
+    for i, row in filtered.iterrows():
 
         title = row["Job Title"]
-
         company = row["Company"]
-
         location = row["Location"]
+        employment = row["Employment Type"]
+        remote = row["Remote"]
+        skills = row["Skills"]
 
         salary = row["Salary"]
 
-        employment = row["Employment Type"]
-
-        remote = row["Remote"]
-
-        skills = row["Skills"]
+        # Salary Format
+        if salary > 0:
+            salary_text = f"💰 {salary:.1f} LPA"
+        else:
+            salary_text = "Salary Not Disclosed"
 
         st.markdown(
             f"""
-<div class="job-card">
+    <div class="job-card">
 
-<div class="job-top">
+    <div class="job-top">
 
-<div>
+    <div>
+    <h3>{title}</h3>
+    <p><b>{company}</b></p>
+    </div>
 
-<h3>{title}</h3>
+    <div class="salary">
+    {salary_text}
+    </div>
 
-<p><b>{company}</b></p>
+    </div>
 
-</div>
+    <br>
 
-<div class="salary">
+    📍 <b>Location:</b> {location}
 
-₹ {salary:,}
+    &nbsp;&nbsp;&nbsp;
 
-</div>
+    💼 <b>Type:</b> {employment}
 
-</div>
+    &nbsp;&nbsp;&nbsp;
 
-<br>
+    🌍 <b>Remote:</b> {remote}
 
-📍 {location}
+    <br><br>
 
-&nbsp;&nbsp;&nbsp;
+    <b>Skills</b>
 
-💼 {employment}
+    <br>
 
-&nbsp;&nbsp;&nbsp;
+    {skills}
 
-🌍 {remote}
-
-<br><br>
-
-<b>Skills</b>
-
-<br>
-
-{skills}
-
-</div>
-""",
+    </div>
+    """,
             unsafe_allow_html=True,
         )
 
-    x, y = st.columns(2)
+        col1, col2 = st.columns(2)
 
-    with x:
-      with st.expander("👁 View Details"):
-        st.write("### Job Description")
-        st.write(row.get("Description", "No description available."))
+        with col1:
 
-    with y:
-      apply_link = row.get("Apply Link", "")
+            with st.expander("👁 View Details"):
 
-    if apply_link:
-        st.link_button(
-            "🚀 Apply Now",
-            apply_link,
-            use_container_width=True
-        )
-    else:
-        st.button(
-            "🚀 Apply Now",
-            disabled=True,
-            use_container_width=True,
-            key=f"apply{_}"
-        )
+                st.write("### Job Description")
+                st.write(
+                    row.get(
+                        "Description",
+                        "No description available."
+                    )
+                )
 
-        st.markdown("")
+                st.write("### Experience")
+                st.write(
+                    row.get(
+                        "Experience",
+                        "Not Mentioned"
+                    )
+                )
 
-    st.divider()
+                st.write("### Education")
+                st.write(
+                    row.get(
+                        "Education",
+                        "Bachelor's Degree"
+                    )
+                )
 
+        with col2:
+
+            apply_link = row.get("Apply Link", "")
+
+            if apply_link and str(apply_link).startswith("http"):
+
+                st.link_button(
+                    "🚀 Apply Now",
+                    apply_link,
+                    use_container_width=True,
+                )
+
+            else:
+
+                st.button(
+                    "🚀 Apply Now",
+                    disabled=True,
+                    key=f"apply_{i}",
+                    use_container_width=True,
+                )
+
+        st.markdown("---")
     # ==============================
     # TABLE
     # ==============================

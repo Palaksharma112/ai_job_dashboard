@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
-<<<<<<< HEAD
 
 
 # =====================================================
 # LOAD DATA
 # =====================================================
+
 @st.cache_data
 def load_data():
 
@@ -15,110 +15,44 @@ def load_data():
             engine="openpyxl"
         )
 
-        # Remove extra spaces from column names
+        # Remove extra spaces
         df.columns = df.columns.str.strip()
 
         # Rename Salary column
-        df.rename(
-            columns={
-                "Salary (LPA)": "Salary",
-                "Salary(LPA)": "Salary",
-                "salary (lpa)": "Salary",
-                "salary(lpa)": "Salary"
-            },
-            inplace=True
-        )
+        if "Salary (LPA)" in df.columns:
+            df.rename(
+                columns={
+                    "Salary (LPA)": "Salary"
+                },
+                inplace=True
+            )
 
-        # Convert Salary from LPA to Rupees
+        # Convert Salary
         if "Salary" in df.columns:
-
-            df["Salary"] = (
-                df["Salary"]
-                .astype(str)
-                .str.replace("LPA", "", regex=False)
-                .str.replace("lpa", "", regex=False)
-                .str.replace(",", "")
-                .str.strip()
-            )
-
-            df["Salary"] = (
-                pd.to_numeric(
-                    df["Salary"],
-                    errors="coerce"
-                )
-                .fillna(0)
-                * 100000
-            )
+            df["Salary"] = pd.to_numeric(
+                df["Salary"],
+                errors="coerce"
+            ).fillna(0)
 
         # Convert Posted Date
         if "Posted Date" in df.columns:
-
             df["Posted Date"] = pd.to_datetime(
                 df["Posted Date"],
                 errors="coerce"
             )
-=======
-from api import get_jobs
-
-
-# =====================================
-# LOAD DATA
-# =====================================
-
-@st.cache_data(ttl=1800)
-def load_data():
-
-    try:
-        df = get_jobs("Data Scientist")
-
-        if df is None or df.empty:
-            return pd.DataFrame()
-
-        df.columns = df.columns.str.strip()
-
-        # Required columns
-        required_columns = [
-            "Job Title",
-            "Company",
-            "Location",
-            "Employment Type",
-            "Salary",
-            "Remote",
-            "Skills",
-            "Apply Link"
-        ]
-
-        for col in required_columns:
-            if col not in df.columns:
-                df[col] = ""
-
-        df["Salary"] = pd.to_numeric(
-            df["Salary"],
-            errors="coerce"
-        ).fillna(0)
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
 
         return df
 
     except Exception as e:
-<<<<<<< HEAD
 
-        st.error(f"Error loading dataset: {e}")
+        st.error(f"Error Loading Dataset : {e}")
+
         return pd.DataFrame()
 
 
 # =====================================================
 # FILTER JOBS
 # =====================================================
-=======
-        st.error(f"Error loading jobs: {e}")
-        return pd.DataFrame()
-
-
-# =====================================
-# FILTER DATA
-# =====================================
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
 
 def filter_jobs(
     df,
@@ -148,18 +82,11 @@ def filter_jobs(
 
     if remote != "All":
         filtered = filtered[
-<<<<<<< HEAD
             filtered["Remote"].astype(str) == str(remote)
         ]
 
     if search:
 
-=======
-            filtered["Remote"].astype(str) == remote
-        ]
-
-    if search:
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
         filtered = filtered[
             filtered.astype(str)
             .apply(
@@ -175,15 +102,9 @@ def filter_jobs(
     return filtered
 
 
-<<<<<<< HEAD
 # =====================================================
 # KPI
 # =====================================================
-=======
-# =====================================
-# KPI
-# =====================================
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
 
 def get_kpis(df):
 
@@ -191,34 +112,22 @@ def get_kpis(df):
 
     total_companies = (
         df["Company"].nunique()
-        if "Company" in df.columns else 0
+        if "Company" in df.columns
+        else 0
     )
 
     avg_salary = (
         int(df["Salary"].mean())
-<<<<<<< HEAD
         if "Salary" in df.columns and not df.empty
         else 0
-=======
-        if not df.empty else 0
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
     )
 
-    remote_jobs = (
-        df["Remote"]
-        .astype(str)
-        .str.lower()
-<<<<<<< HEAD
-        .str.contains("remote|yes|true|work from home")
-        .sum()
-        if "Remote" in df.columns
-        else 0
-=======
-        .eq("yes")
-        .sum()
-        if "Remote" in df.columns else 0
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
-    )
+    remote_jobs = df[
+    df["Remote"]
+    .astype(str)
+    .str.lower()
+    .str.contains("remote")
+].shape[0]
 
     return (
         total_jobs,
@@ -228,61 +137,9 @@ def get_kpis(df):
     )
 
 
-<<<<<<< HEAD
 # =====================================================
 # COMPANY SUMMARY
 # =====================================================
-
-def company_summary(df):
-
-    summary = (
-
-        df.groupby("Company", dropna=False)
-
-        .agg(
-
-            Jobs=("Company", "count"),
-
-            Avg_Salary=("Salary", "mean"),
-
-            Cities=("Location", "nunique")
-
-        )
-
-        .reset_index()
-
-=======
-# =====================================
-# TOP SKILLS
-# =====================================
-
-def top_skills(df):
-
-    if df.empty or "Skills" not in df.columns:
-        return pd.DataFrame()
-
-    skills = (
-        df["Skills"]
-        .dropna()
-        .str.split(",")
-        .explode()
-        .str.strip()
-        .value_counts()
-        .head(10)
-        .reset_index()
-    )
-
-    skills.columns = [
-        "Skill",
-        "Demand"
-    ]
-
-    return skills
-
-
-# =====================================
-# COMPANY SUMMARY
-# =====================================
 
 def company_summary(df):
 
@@ -290,14 +147,13 @@ def company_summary(df):
         return pd.DataFrame()
 
     summary = (
-        df.groupby("Company")
+        df.groupby("Company", dropna=False)
         .agg(
             Jobs=("Company", "count"),
             Avg_Salary=("Salary", "mean"),
             Cities=("Location", "nunique")
         )
         .reset_index()
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
     )
 
     summary["Avg_Salary"] = (
@@ -309,19 +165,18 @@ def company_summary(df):
     return summary
 
 
-<<<<<<< HEAD
 # =====================================================
 # TOP SKILLS
 # =====================================================
 
 def top_skills(df):
 
-    skills = []
-
     if "Skills" not in df.columns:
         return pd.DataFrame(
             columns=["Skill", "Demand"]
         )
+
+    skills = []
 
     for value in df["Skills"].dropna():
 
@@ -332,31 +187,23 @@ def top_skills(df):
             if skill:
                 skills.append(skill)
 
-    if not skills:
-
+    if len(skills) == 0:
         return pd.DataFrame(
             columns=["Skill", "Demand"]
         )
 
-    return (
-
+    skill_df = (
         pd.Series(skills)
-
         .value_counts()
-
-        .head(10)
-
         .reset_index()
-
-        .rename(
-            columns={
-                "index": "Skill",
-                "count": "Demand",
-                0: "Demand"
-            }
-        )
-
     )
+
+    skill_df.columns = [
+        "Skill",
+        "Demand"
+    ]
+
+    return skill_df.head(10)
 
 
 # =====================================================
@@ -365,16 +212,16 @@ def top_skills(df):
 
 def highest_paying_companies(df):
 
+    if df.empty:
+        return pd.DataFrame()
+
     return (
-
         df.groupby("Company")["Salary"]
-
         .mean()
-
-        .sort_values(ascending=False)
-
-        .head(10)
-
+        .sort_values(
+            ascending=False
+        )
+        .reset_index()
     )
 
 
@@ -384,25 +231,45 @@ def highest_paying_companies(df):
 
 def jobs_by_city(df):
 
-    return df["Location"].value_counts()
+    return (
+        df["Location"]
+        .value_counts()
+        .reset_index()
+        .rename(
+            columns={
+                "index": "Location",
+                "Location": "Jobs"
+            }
+        )
+    )
 
 
 # =====================================================
-# JOBS BY TYPE
+# JOBS BY EMPLOYMENT TYPE
 # =====================================================
 
 def jobs_by_type(df):
 
-    return df["Employment Type"].value_counts()
+    return (
+        df["Employment Type"]
+        .value_counts()
+        .reset_index()
+        .rename(
+            columns={
+                "index": "Employment Type",
+                "Employment Type": "Jobs"
+            }
+        )
+    )
 
 
 # =====================================================
-# SEARCH
+# SEARCH JOBS
 # =====================================================
 
 def search_jobs(df, keyword):
 
-    if not keyword:
+    if keyword == "":
         return df
 
     return df[
@@ -424,24 +291,31 @@ def search_jobs(df, keyword):
 
 def dataset_info(df):
 
-    return {
+    avg_salary = 0
 
-        "Total Jobs": len(df),
-
-        "Total Companies": df["Company"].nunique(),
-
-        "Total Cities": df["Location"].nunique(),
-
-        "Average Salary": round(
+    if "Salary" in df.columns and not df.empty:
+        avg_salary = round(
             df["Salary"].mean(),
             2
         )
 
+    return {
+
+        "Total Jobs": len(df),
+
+        "Total Companies":
+        df["Company"].nunique(),
+
+        "Total Cities":
+        df["Location"].nunique(),
+
+        "Average Salary":
+        avg_salary
     }
 
 
 # =====================================================
-# CSV DOWNLOAD
+# DOWNLOAD CSV
 # =====================================================
 
 def convert_csv(df):
@@ -449,11 +323,3 @@ def convert_csv(df):
     return df.to_csv(
         index=False
     ).encode("utf-8")
-=======
-# =====================================
-# DOWNLOAD CSV
-# =====================================
-
-def convert_csv(df):
-    return df.to_csv(index=False).encode("utf-8")
->>>>>>> 3fc627f5b2d2f2d1df425056819f994b9a1cbc6b
