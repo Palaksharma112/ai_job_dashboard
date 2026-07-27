@@ -168,6 +168,22 @@ def dashboard_header():
 
 def dashboard_page():
 
+    st.write("Step 1: Dashboard started")
+
+    df = load_data()
+
+    st.write("Step 2: Data loaded")
+
+    if df.empty:
+        st.error("Dataset is empty!")
+        return
+
+    st.write("Step 3: Dataset shape:", df.shape)
+
+    search, search_by = dashboard_header()
+
+    st.write("Step 4: Header loaded")
+
     with st.spinner("Loading IT Job Dataset..."):
 
         df = load_data()
