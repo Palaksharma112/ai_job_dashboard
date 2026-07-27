@@ -1,54 +1,66 @@
 import streamlit as st
 import pandas as pd
 
-
 # =====================================================
 # LOAD DATA
 # =====================================================
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def load_data():
-
     try:
+        st.write("📂 Loading dataset...")
+
         df = pd.read_excel(
             "data/jobs.xlsx",
             engine="openpyxl"
         )
 
-        # Remove extra spaces
+        st.write(f"✅ Dataset Loaded: {len(df):,} Records")
+
+        # Remove extra spaces from column names
         df.columns = df.columns.str.strip()
 
-        # Rename Salary column
+        # Rename Salary column if required
         if "Salary (LPA)" in df.columns:
             df.rename(
-                columns={
-                    "Salary (LPA)": "Salary"
-                },
+                columns={"Salary (LPA)": "Salary"},
                 inplace=True
             )
 
-        # Convert Salary
+        # Salary
         if "Salary" in df.columns:
-            df["Salary"] = pd.to_numeric(
-                df["Salary"],
-                errors="coerce"
-            ).fillna(0)
+            df["Salary"] = (
+                pd.to_numeric(
+                    df["Salary"],
+                    errors="coerce"
+                )
+                .fillna(0)
+            )
 
-        # Convert Posted Date
+        # Posted Date
         if "Posted Date" in df.columns:
             df["Posted Date"] = pd.to_datetime(
                 df["Posted Date"],
                 errors="coerce"
             )
 
+        # Remove duplicate rows
+        df.drop_duplicates(inplace=True)
+
+        # Replace NaN values
+        df.fillna("", inplace=True)
+
+        st.success("✅ Data Ready")
+
         return df
 
-    except Exception as e:
-
-        st.error(f"Error Loading Dataset : {e}")
-
+    except FileNotFoundError:
+        st.error("❌ data/jobs.xlsx not found.")
         return pd.DataFrame()
 
+    except Exception as e:
+        st.error(f"❌ Error loading dataset: {e}")
+        return pd.DataFrame()
 
 # =====================================================
 # FILTER JOBS
