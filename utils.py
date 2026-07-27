@@ -85,18 +85,16 @@ def filter_jobs(
             filtered["Remote"].astype(str) == str(remote)
         ]
 
-    if search:
+    if search and search != "All":
 
         filtered = filtered[
-            filtered.astype(str)
-            .apply(
-                lambda x: x.str.contains(
-                    search,
-                    case=False,
-                    na=False
-                )
+            filtered["Job Title"]
+            .astype(str)
+            .str.contains(
+                str(search),
+                case=False,
+                na=False
             )
-            .any(axis=1)
         ]
 
     return filtered

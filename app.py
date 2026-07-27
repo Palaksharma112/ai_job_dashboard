@@ -8,8 +8,8 @@ from database import create_table
 # =====================================================
 
 st.set_page_config(
-    page_title="AI Job Market Dashboard",
-    page_icon="🤖",
+    page_title="IT Job Market Dashboard",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
 )

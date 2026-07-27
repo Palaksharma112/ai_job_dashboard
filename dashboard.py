@@ -116,14 +116,12 @@ def dashboard_header():
     col1, col2 = st.columns([6, 1])
 
     with col1:
-
         page_header(
             "💼 IT Job Market Dashboard",
             "Explore IT Jobs using your own dataset"
         )
 
     with col2:
-
         st.write("")
         st.write("")
 
@@ -132,19 +130,37 @@ def dashboard_header():
             key="header_logout",
             use_container_width=True
         ):
-
             st.session_state.logged_in = False
             st.session_state.page = "login"
             st.rerun()
 
-    search = st.text_input(
-        "",
-        placeholder="Search Job Title, Company or Skills...",
-        label_visibility="collapsed"
-    )
+    st.write("")
 
-    return search
+    st.markdown("### 🔍 Search Jobs")
 
+    c1, c2 = st.columns([1, 4], gap="small")
+
+    with c1:
+        search_by = st.selectbox(
+            "Search By",
+            [
+                "All",
+                "Job Title",
+                "Company",
+                "Skills",
+                "Location"
+            ],
+            index=0
+        )
+
+    with c2:
+        search = st.text_input(
+            "Search",
+            placeholder="🔍 Enter keyword...",
+            label_visibility="collapsed"
+        )
+
+    return search, search_by
 
 # =====================================================
 # DASHBOARD PAGE
@@ -155,6 +171,74 @@ def dashboard_page():
     with st.spinner("Loading IT Job Dataset..."):
 
         df = load_data()
+
+        search, search_by = dashboard_header()
+
+        filtered_df = df.copy()
+
+    if search.strip():
+
+     if search_by == "All":
+
+        filtered_df = filtered_df[
+            filtered_df.astype(str)
+            .apply(
+                lambda x: x.str.contains(
+                    search,
+                    case=False,
+                    na=False
+                )
+            )
+            .any(axis=1)
+        ]
+
+    elif search_by == "Job Title":
+
+        filtered_df = filtered_df[
+            filtered_df["Job Title"]
+            .astype(str)
+            .str.contains(
+                search,
+                case=False,
+                na=False
+            )
+        ]
+
+    elif search_by == "Company":
+
+        filtered_df = filtered_df[
+            filtered_df["Company"]
+            .astype(str)
+            .str.contains(
+                search,
+                case=False,
+                na=False
+            )
+        ]
+
+    elif search_by == "Location":
+
+        filtered_df = filtered_df[
+            filtered_df["Location"]
+            .astype(str)
+            .str.contains(
+                search,
+                case=False,
+                na=False
+            )
+        ]
+
+    elif search_by == "Skills":
+
+        filtered_df = filtered_df[
+            filtered_df["Skills"]
+            .astype(str)
+            .str.contains(
+                search,
+                case=False,
+                na=False
+            )
+        ]
 
     if df.empty:
 
@@ -186,7 +270,7 @@ def dashboard_page():
         profile_page()
         return
 
-    search = dashboard_header()
+    
 
     filtered_df = filter_jobs(
         df=df,
@@ -227,6 +311,7 @@ def dashboard_page():
         kpi_card("🌍", "Remote Jobs", remote_jobs)
 
     st.divider()
+
 
         # =====================================================
     # FIRST ROW CHARTS
